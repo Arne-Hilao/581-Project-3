@@ -50,9 +50,10 @@ Servo myservo;
 const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
 int serPin = 9;
 int pos = 0;
-int seconds_countdown = 0, minutes_countdown = 1;
+int seconds_countdown = 0, minutes_countdown = 1, hour_countdown;
 int seconds_passed;
 int reset_time = 0;
+bool angry = false;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 void setup() {
@@ -74,10 +75,70 @@ void servo() {
   }
 }
 
+String getDisplay() {
+
+}
+
+//
+void resetBuddy() {
+
+}
+
+
+
 void loop() {
   // set the cursor to column 0, line 1
   // (note: line 1 is the second row, since counting begins with 0):
   lcd.setCursor(0, 0);
+
+  //runtime loop:
+
+  //get time since started
+  time = millis() / 1000;
+
+  if (!angry) {
+    //the buddy isn't angry at you
+    //countdown
+    seconds_passed ++;
+
+    if (seconds_passed == 59) {
+        seconds_passed = 0;
+        minutes_passed ++;
+    }
+
+    if (minutes_passed == 59) {
+        hours_passed ++;
+    }
+
+    //check if countdown is down
+
+    if (hours_passed == hour_countdown && minutes_passed == minutes_countdown && seconds_passed == seconds_countdown) {
+        //countdown is done
+        angry = true;
+    }
+
+    //if countdown is down, get attention
+    angry = true;
+
+    //reset the servo and timer
+    lcd.print(current_time);
+}
+else {
+    //you need to drink some water
+    lcd.print("((•̀'ω'•́))");
+
+    //check if water is drank
+    
+    //if so, set flag
+
+    //if flag is set, and angry, check if water is put back.
+
+    //if so, stop being angryangry = false;
+
+    //reset servo
+
+    myservo.write(0);
+}
 
   servo();
   //lcd.print(current_time);
