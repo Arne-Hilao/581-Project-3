@@ -70,14 +70,14 @@ void setup() {
   myservo.attach(serPin);
 }
 
-void servo() {
-  for (pos = 0; pos <= 180; pos +=1) {
+void wave() {
+  for (pos = 0; pos <= 90; pos +=1) {
     myservo.write(pos);
-    delay(15);
+    delay(5);
   }
-  for (pos = 180; pos >= 0; pos -= 1) {
+  for (pos = 90; pos >= 0; pos -= 1) {
     myservo.write(pos);
-    delay(15);
+    delay(5);
   }
 
   delay(500); //Small delay
@@ -144,6 +144,8 @@ else {
     //you need to drink some water
     //lcd.print("((•̀'ω'•́))");
 
+    wave();
+
     //check if water is drank
     
     //if so, set flag
@@ -156,7 +158,5 @@ else {
 
     myservo.write(0);
 }
-
-  servo();
   //lcd.print(current_time);
 }
