@@ -52,11 +52,17 @@ int serPin = 9;
 int pos = 0;
 int seconds_countdown = 0, minutes_countdown = 1, hour_countdown;
 int seconds_passed;
+int minutes_passed;
+int hours_passed;
 int reset_time = 0;
+int time = 0;
+int current_time = 0;
 bool angry = false;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
-
+const int pResistor = A0; // Photoresistor at Arduino analog pin A0
+int value;
 void setup() {
+  Serial.begin(9600);
   // set up the LCD's number of columns and rows:
   lcd.begin(16, 2);
   // Print a message to the LCD.
@@ -73,6 +79,16 @@ void servo() {
     myservo.write(pos);
     delay(15);
   }
+  value = analogRead(pResistor);
+  Serial.println(value);
+  if (value < 50){
+    lcd.print("Low Light");
+  }
+  else{
+    lcd.print("High Light");
+  }
+
+  delay(500); //Small delay
 }
 
 String getDisplay() {
@@ -121,11 +137,11 @@ void loop() {
     angry = true;
 
     //reset the servo and timer
-    lcd.print(current_time);
+    //lcd.print(current_time);
 }
 else {
     //you need to drink some water
-    lcd.print("((•̀'ω'•́))");
+    //lcd.print("((•̀'ω'•́))");
 
     //check if water is drank
     
