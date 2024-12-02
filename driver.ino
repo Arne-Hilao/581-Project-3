@@ -50,7 +50,7 @@ Servo myservo;
 const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
 int serPin = 9;
 int pos = 0;
-int countdown = 10, seconds = 10, minutes = 0, hours = 0;
+int countdown = 3600, seconds = 0, minutes = 0, hours = 1;
 int reset_time = 0, time = 0, time_passed = 0, previous_time = 0;
 bool angry = false;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
@@ -108,8 +108,10 @@ String getDisplay() {
 //
 void resetBuddy() {
   //to reset, reset the variables
-  countdown = 10;
-  seconds = 10;
+  countdown = 3600;
+  seconds = 0;
+  minutes = 1;
+  hours = 1;
   reset_time = time;
   time_passed = 0;
   previous_time = 0;
@@ -151,27 +153,25 @@ void loop() {
     if (previous_time != time_passed) {
       //a second has passed
       countdown--;
-      seconds--;
+      if (seconds == 0) {
+        seconds = 59;
+        if (minutes == 0) {
+          minutes = 59;
+          hours--;
+        }
+        else {
+          minutes--;
+        }
+      }
+      else {
+        seconds--;
+      }
       previous_time = time_passed;
     }
     
     if (countdown == 0) {
       //countdown is done
       angry = true;
-    }
-    else {
-      if ((millis() % 1000) == 0) {
-        //Serial.print("one second");
-       //decrement seconds, minutes, and hours
-        if (seconds == 0 && minutes > 0) {
-          seconds = 59;
-          minutes--;
-        }
-        if (minutes == 0 && hours > 0) {
-          minutes = 59;
-          hours--;
-        }
-      }
     }
 
     String display = getDisplay();
