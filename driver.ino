@@ -50,7 +50,7 @@ Servo myservo;
 const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
 int serPin = 9;
 int pos = 0;
-int countdown = 3600, seconds = 0, minutes = 0, hours = 1;
+int countdown = 3, seconds = 3, minutes = 0, hours = 0;
 int reset_time = 0, time = 0, time_passed = 0, previous_time = 0;
 bool angry = false;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
@@ -71,16 +71,16 @@ void wave() {
   lcd.setCursor(2, 0);
   lcd.print("DRINK WATER!");
 
-  for (pos = 20; pos <= 160; pos +=1) {
+  for (pos = 45; pos <= 135; pos +=1) {
     myservo.write(pos);
-    delay(5);
+    delay(7);
   }
-  for (pos = 160; pos >= 20; pos -= 1) {
+  for (pos = 135; pos >= 45; pos -= 1) {
     myservo.write(pos);
-    delay(5);
+    delay(7);
   }
 
-  delay(500); //Small delay
+  delay(300); //Small delay
 }
 
 String getDisplay() {
@@ -108,14 +108,18 @@ String getDisplay() {
 //
 void resetBuddy() {
   //to reset, reset the variables
-  countdown = 3600;
-  seconds = 0;
-  minutes = 1;
-  hours = 1;
+  countdown = 3;
+  seconds = 3;
+  minutes = 0;
+  hours = 0;
   reset_time = time;
   time_passed = 0;
   previous_time = 0;
-  myservo.write(20);
+  int pos = myservo.read();
+  for (int i = pos; i >= 45; i--) {
+    myservo.write(i);
+    delay(10);
+  }
   lcd.setCursor(2, 0);
   lcd.print("DRINK  TIMER");
   angry = false;
