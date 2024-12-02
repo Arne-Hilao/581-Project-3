@@ -50,17 +50,14 @@ Servo myservo;
 const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
 int serPin = 9;
 int pos = 0;
-int seconds_countdown = 0, minutes_countdown = 1, hour_countdown;
-int seconds_passed;
-int minutes_passed;
-int hours_passed;
-int reset_time = 0;
-int time = 0;
-int current_time = 0;
+int countdown = 10, seconds = 10, minutes = 0, hours = 0;
+int reset_time = 0, time = 0, time_passed = 0, previous_time = 0;
 bool angry = false;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 const int pResistor = A0; // Photoresistor at Arduino analog pin A0
-int value;
+int light_value;
+bool isDown = true;
+
 void setup() {
   Serial.begin(9600);
   // set up the LCD's number of columns and rows:
@@ -71,11 +68,14 @@ void setup() {
 }
 
 void wave() {
-  for (pos = 0; pos <= 90; pos +=1) {
+  lcd.setCursor(2, 0);
+  lcd.print("DRINK WATER!");
+
+  for (pos = 20; pos <= 160; pos +=1) {
     myservo.write(pos);
     delay(5);
   }
-  for (pos = 90; pos >= 0; pos -= 1) {
+  for (pos = 160; pos >= 20; pos -= 1) {
     myservo.write(pos);
     delay(5);
   }
@@ -84,79 +84,105 @@ void wave() {
 }
 
 String getDisplay() {
-
+  lcd.setCursor(2, 0);
+  lcd.print("DRINK  TIMER");
+  lcd.setCursor(4, 1);
+  String display = "";
+  if (hours < 10) {
+    display += "0";
+  }
+  display += hours;
+  display += ":";
+  if (minutes < 10) {
+    display += "0";
+  }
+  display += minutes;
+  display += ":";
+  if (seconds < 10) {
+    display += "0";
+  }
+  display += seconds;
+  return display;
 }
 
 //
 void resetBuddy() {
-
+  //to reset, reset the variables
+  countdown = 10;
+  seconds = 10;
+  reset_time = time;
+  time_passed = 0;
+  previous_time = 0;
+  myservo.write(20);
+  lcd.setCursor(2, 0);
+  lcd.print("DRINK  TIMER");
+  angry = false;
 }
-
-
 
 void loop() {
+  //runtime loop:
+  //get sensor data and time since started
   // set the cursor to column 0, line 1
   // (note: line 1 is the second row, since counting begins with 0):
-  lcd.setCursor(0, 0);
-
-  //runtime loop:
-
-  //get time since started
   time = millis() / 1000;
+  time_passed = time - reset_time;
+  light_value = analogRead(pResistor);
 
-  value = analogRead(pResistor);
-  Serial.println(value);
-  if (value < 25){
-    lcd.print("Low Light");
+  Serial.println(light_value);
+
+  if (light_value < 50) {
+    //cup is down
+    isDown = true;
   }
-  else{
-    lcd.print("High Light");
+  else {
+    isDown = false;
   }
 
-  if (!angry) {
-    //the buddy isn't angry at you
-    //countdown
-    seconds_passed ++;
-
-    if (seconds_passed == 59) {
-        seconds_passed = 0;
-        minutes_passed ++;
-    }
-
-    if (minutes_passed == 59) {
-        hours_passed ++;
-    }
-
-    //check if countdown is down
-
-    if (hours_passed == hour_countdown && minutes_passed == minutes_countdown && seconds_passed == seconds_countdown) {
-        //countdown is done
-        angry = true;
-    }
-
-    //if countdown is down, get attention
-    angry = true;
-
-    //reset the servo and timer
-    //lcd.print(current_time);
-}
-else {
-    //you need to drink some water
-    //lcd.print("((•̀'ω'•́))");
-
+  //check if angry
+  if (angry) {
+    //arduino is mad that you're not drinking water
     wave();
-
-    //check if water is drank
+    if (!isDown) {
+      resetBuddy();
+    }
+  }
+  else {
+    //arduino is counting down
+    if (previous_time != time_passed) {
+      //a second has passed
+      countdown--;
+      seconds--;
+      previous_time = time_passed;
+    }
     
-    //if so, set flag
+    if (countdown == 0) {
+      //countdown is done
+      angry = true;
+    }
+    else {
+      if ((millis() % 1000) == 0) {
+        //Serial.print("one second");
+       //decrement seconds, minutes, and hours
+        if (seconds == 0 && minutes > 0) {
+          seconds = 59;
+          minutes--;
+        }
+        if (minutes == 0 && hours > 0) {
+          minutes = 59;
+          hours--;
+        }
+      }
+    }
 
-    //if flag is set, and angry, check if water is put back.
+    String display = getDisplay();
 
-    //if so, stop being angryangry = false;
+    //display the timer
+    lcd.print(display);
 
-    //reset servo
-
-    myservo.write(0);
-}
-  //lcd.print(current_time);
+    //now check if the water bottle is lifted
+    if (!isDown) {
+      //waterbottle was lifted, reset
+      resetBuddy();
+    }
+  }
 }
